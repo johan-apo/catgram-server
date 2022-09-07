@@ -19,7 +19,9 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .addCookieAuth('Authentication')
     .setTitle('Catgram')
-    .setDescription('A project about an Instagram clone but dedicated for cats')
+    .setDescription(
+      'A REST API that has some main social network features. It uses MongoDB as database and Amazon S3 for file storage.',
+    )
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
