@@ -2,18 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument } from './schemas/post.schema';
 import { Model } from 'mongoose';
-import {
-  addPictureToBucket,
-  deletePictureFromBucket,
-  getBucketImageUrlWithAuthorAndPictureName,
-  getResourceFromURL,
-} from 'src/utils/utilsFunctions';
+import { getResourceFromURL } from 'src/utils/utility';
 import { Comment, CommentDocument } from 'src/comments/schemas/comment.schema';
 import { Like, LikeDocument } from './schemas/like.schema';
+import { S3Service } from 'src/services/s3.service';
 
 @Injectable()
 export class PostsService {
   constructor(
+    private readonly s3Service: S3Service,
     @InjectModel(Post.name) private readonly postModel: Model<PostDocument>,
     @InjectModel(Comment.name)
     private readonly commentModel: Model<CommentDocument>,
@@ -26,18 +23,18 @@ export class PostsService {
     tags: string[];
   }) {
     try {
-      await addPictureToBucket(data.postPicture, {
-        bucketName: 'catgram-app',
+      await this.s3Service.uploadPicture({
+        file: data.postPicture,
         prefixKey: `posts/${data.author}`,
       });
 
       const newPost = new this.postModel({
         description: data.description,
         tags: data.tags,
-        postImageUrl: getBucketImageUrlWithAuthorAndPictureName(
-          data.author,
-          data.postPicture.originalname,
-        ),
+        postImageUrl: this.s3Service.getPostImageUrl({
+          author: data.author,
+          filename: data.postPicture.originalname,
+        }),
         author: data.author,
       });
       newPost.save();
@@ -106,8 +103,8 @@ export class PostsService {
     try {
       const post = await this.postModel.findById(postId);
       const filename = getResourceFromURL(post.postImageUrl);
-      await deletePictureFromBucket(filename, {
-        bucketName: 'catgram-app',
+      await this.s3Service.deletePicture({
+        filename,
         prefixKey: `posts/${author}`,
       });
       await this.commentModel.deleteMany({ postId });

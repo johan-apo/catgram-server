@@ -1,20 +1,16 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument } from 'src/posts/schemas/post.schema';
-import {
-  addPictureToBucket,
-  deletePictureFromBucket,
-  getResourceFromURL,
-  STORAGE_PLACEHOLDER_IMAGE_URI,
-} from 'src/utils/utilsFunctions';
-
+import { getResourceFromURL } from 'src/utils/utility';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
+import { S3Service } from 'src/services/s3.service';
 
 @Injectable()
 export class UsersService {
   constructor(
+    private readonly s3Service: S3Service,
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(Post.name) private readonly postModel: Model<PostDocument>,
   ) {}
@@ -34,7 +30,6 @@ export class UsersService {
     try {
       const newUserDocument = new this.userModel({
         ...userData,
-        profilePicture: STORAGE_PLACEHOLDER_IMAGE_URI,
       });
       await newUserDocument.save();
     } catch (error) {
@@ -75,23 +70,25 @@ export class UsersService {
   }) {
     const user = await this.userModel.findById(data.id);
 
-    if (user.profilePicture !== STORAGE_PLACEHOLDER_IMAGE_URI) {
+    if (user.profilePicture) {
       const pictureKey = getResourceFromURL(user.profilePicture);
-      await deletePictureFromBucket(pictureKey, {
-        bucketName: 'catgram-app',
+      await this.s3Service.deletePicture({
+        filename: pictureKey,
         prefixKey: 'users',
       });
     }
 
     try {
-      await addPictureToBucket(data.profilePicture, {
-        bucketName: 'catgram-app',
+      await this.s3Service.uploadPicture({
+        file: data.profilePicture,
         prefixKey: 'users',
       });
       await this.userModel.findByIdAndUpdate(data.id, {
         name: data.name,
         username: data.username,
-        profilePicture: `https://catgram-app.s3.amazonaws.com/users/${data.profilePicture.originalname}`,
+        profilePicture: this.s3Service.getProfileImageUrl(
+          data.profilePicture.originalname,
+        ),
       });
 
       return {

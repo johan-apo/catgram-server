@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Comment, CommentSchema } from 'src/comments/schemas/comment.schema';
+import { S3Service } from 'src/services/s3.service';
 import { User, UserSchema } from 'src/users/schemas/user.schema';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
@@ -19,6 +20,6 @@ import { PostSchema, Post } from './schemas/post.schema';
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
   ],
   controllers: [PostsController],
-  providers: [PostsService],
+  providers: [PostsService, S3Service],
 })
 export class PostsModule {}
