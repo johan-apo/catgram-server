@@ -19,7 +19,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .addCookieAuth('Authentication')
     .setTitle('Catgram')
-    .setDescription('A project about a Instagram clone but dedicated for cats')
+    .setDescription('A project about an Instagram clone but dedicated for cats')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
@@ -31,7 +31,7 @@ async function bootstrap() {
   };
   SwaggerModule.setup('api', app, document, customOptions);
 
-  await app.listen(4000);
+  await app.listen(9000);
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

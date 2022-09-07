@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { CommmentsModule } from './comments/comments.module';
 import { PostsModule } from './posts/posts.module';
 import { UsersModule } from './users/users.module';
+import { DogsModule } from './dogs/dogs.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     PostsModule,
     CommmentsModule,
+    DogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
