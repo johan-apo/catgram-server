@@ -29,11 +29,7 @@ import { UsersModule } from './users/users.module';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: `mongodb+srv://${configService.get(
-          'MONGODB_USER',
-        )}:${configService.get(
-          'MONGODB_PASSWORD',
-        )}@learning-cluster.c1jzg.mongodb.net/catgram?retryWrites=true&w=majority`,
+        uri: configService.get('MONGODB_URI'),
       }),
       inject: [ConfigService],
     }),
